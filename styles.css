@@ -523,6 +523,7 @@ div.page.active[style*="display: none"] {
     background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
     height: 8px;
     border-radius: 4px;
+    /* Remove width: 100% to allow natural positioning between handles */
 }
 
 .irs--flat .irs-handle {
@@ -583,8 +584,7 @@ div.page.active[style*="display: none"] {
 }
 
 .irs--flat .irs-bar {
-    width: 100% !important;
-    max-width: 100% !important;
+    /* Bar width is controlled by Ion Range Slider positioning */
 }
 
 /* Ensure slider container takes full width */
@@ -637,8 +637,7 @@ div.page.active[style*="display: none"] {
 }
 
 .irs--flat .irs-bar {
-    width: 100% !important;
-    max-width: 100% !important;
+    /* Bar width is controlled by Ion Range Slider positioning */
     overflow: hidden;
 }
 

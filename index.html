@@ -47,21 +47,6 @@
             <div class="forecast-container"><!-- open forecast-container -->
                 <div class="forecast-card"><!-- open forecast-card -->
 
-                    <div class="date-section"><!-- open date-section -->
-                        <h3>Delivery Period</h3>
-                        <div class="date-selector">
-                            <div class="date-input">
-                                <label>Date Range</label>
-                                <div class="slider-container">
-                                    <input type="range" id="date-range-slider" class="date-range-slider" min="0" max="100" value="0,30" style="display:none;">
-                                    <div class="slider-labels">
-                                        <span id="date-range-label">Loading...</span>
-                                    </div><!-- /slider-labels -->
-                                </div><!-- /slider-container -->
-                            </div><!-- /date-input -->
-                        </div><!-- /date-selector -->
-                    </div><!-- /date-section ✅ ADDED CLOSE -->
-
                     <div class="sales-chart-section"><!-- open sales-chart-section -->
                         <div class="selected-orders-section">
                             <button id="show-orders-btn-forecast" class="btn-secondary" onclick="toggleOrdersTable('forecast')">
@@ -103,6 +88,21 @@
                         </div><!-- /selected-orders-section -->
 
                         <h3>Daily Sales Overview</h3>
+                        
+                        <!-- Date Range Slider moved here -->
+                        <div class="date-section" style="margin: 20px 0;">
+                            <div class="date-selector">
+                                <div class="date-input">
+                                    <label>Date Range</label>
+                                    <div class="slider-container">
+                                        <input type="range" id="date-range-slider" class="date-range-slider" min="0" max="100" value="0,30" style="display:none;">
+                                        <div class="slider-labels">
+                                            <span id="date-range-label">Loading...</span>
+                                        </div><!-- /slider-labels -->
+                                    </div><!-- /slider-container -->
+                                </div><!-- /date-input -->
+                            </div><!-- /date-selector -->
+                        </div><!-- /date-section -->
                         <div class="chart-container">
                             <div class="chart-overlay">
                                 <div class="revenue-display" id="revenue-display">
@@ -287,9 +287,8 @@
                         <h3>Agreement Summary</h3>
                         <ul class="agreement-list">
                             <li>You will receive <strong id="terms-advance-amount">$0</strong> upfront today</li>
-                            <li>You are expected to deliver <strong id="terms-receivables-amount">$0</strong> worth of goods between Oct–Nov 2025</li>
-                            <li>Repayments will be deducted automatically from those payouts</li>
-                            <li>If deliveries fall short, the difference will be reconciled</li>
+                            <li>Repayments will be deducted automatically from your payouts as you deliver the orders in this group.</li>
+                            <li>If an order is broken, we will recoup the amount from a different order not in this group.</li>
                         </ul>
                     </div>
 
@@ -297,7 +296,7 @@
                         <div class="checkbox-container">
                             <input type="checkbox" id="agree-terms" class="checkbox">
                             <label for="agree-terms">
-                                I agree to the terms and authorize early payout deduction
+                                I agree to the terms
                             </label>
                         </div>
                     </div>
