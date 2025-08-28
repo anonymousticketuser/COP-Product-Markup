@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StubHub Early Pay - Get Paid Before Your Events</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/css/ion.rangeSlider.min.css">
+</head>
+<body>
+    <!-- Marketplace Header -->
+    <nav class="marketplace-header">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="marketplace-logo">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>StubHub</span>
+                </div>
+                <div class="breadcrumb">
+                    <a href="#" class="breadcrumb-item">Seller Portal</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <a href="#" class="breadcrumb-item">Finance</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span class="breadcrumb-item active">Get Paid Early</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>John Smith</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Container -->
+    <div id="page-container">
+        <!-- Sales Forecast Selection Page -->
+        <div id="forecast-page" class="page active">
+            <div class="page-header">
+                <h1>Confirmed Order Purchase Program</h1>
+                <p>Choose the order period you'd like to receive an advance for. We'll calculate your expected receivables amount and advance amount.</p>
+            </div>
+            <div class="forecast-container">
+                <div class="forecast-card">
+                    <div class="date-section">
+                        <h3>Delivery Period</h3>
+                        <div class="date-selector">
+                            <div class="date-input">
+                                <label>Date Range</label>
+                                <div class="slider-container">
+                                    <input type="range" id="date-range-slider" class="date-range-slider" min="0" max="100" value="0,30" style="display: none;">
+                                    <div class="slider-labels">
+                                        <span id="date-range-label">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                     
+
+                    <div class="sales-chart-section">
+                        <div class="selected-orders-section">
+                            <button id="show-orders-btn-forecast" class="btn-secondary" onclick="toggleOrdersTable('forecast')">
+                                <i class="fas fa-list"></i>
+                                Show Selected Orders
+                            </button>
+                            
+                            <div id="orders-table-container-forecast" class="orders-table-container" style="display: none;">
+                                <h3>Selected Orders</h3>
+                                <div class="table-container">
+                                    <table id="orders-table-forecast" class="orders-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Transaction ID</th>
+                                                <th>Event ID</th>
+                                                <th>Event Date/Time</th>
+                                                <th>Event Name</th>
+                                                <th>Order Proceeds</th>
+                                                <th>Must Ship By Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="orders-table-body-forecast">
+                                            <!-- Orders will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="pagination-controls" id="pagination-controls-forecast" style="display: none;">
+                                    <div class="pagination-info">
+                                        <span id="pagination-info-forecast">Showing 1-100 of 0 orders</span>
+                                    </div>
+                                    <div class="pagination-buttons">
+                                        <button id="prev-page-forecast" class="btn-secondary btn-small" onclick="changePage('forecast', -1)" disabled>
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </button>
+                                        <span id="page-numbers-forecast" class="page-numbers"></span>
+                                        <button id="next-page-forecast" class="btn-secondary btn-small" onclick="changePage('forecast', 1)" disabled>
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3>Daily Sales Overview</h3>
+                        <div class="chart-container">
+                            <div class="chart-overlay">
+                                <div class="revenue-display" id="revenue-display">
+                                    <div class="revenue-amount" id="revenue-amount">$0</div>
+                                    <div class="revenue-label">Selected Receivables Amount</div>
+                                </div>
+                            </div>
+                            <canvas id="sales-chart" width="1200" height="400"></canvas>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="chart-legend">
+                                
+                                <div class="legend-item">
+                                    <span class="legend-color orange"></span>
+                                    <span>Selected Range</span>
+                                </div>
+                              
+                            </div>
+                            <p class="chart-note">Hover over bars to see daily totals • Click bars to select custom days • Drag slider to adjust range</p>
+                        </div>
+                    </div>
+
+                    <div class="forecast-summary">
+                        <div class="summary-section">
+                            <h3>Selected Receivables Amount</h3>
+                            <div class="forecast-amount" id="forecast-amount">$0</div>
+                            <p class="forecast-note">Based on <span id="order-count">0</span> orders for selected period</p>
+                        </div>
+                        
+                        <div class="advance-section">
+                            <h3>Advance Breakdown</h3>
+                           
+                            
+                            <div class="advance-breakdown">
+                                <div class="breakdown-row">
+                                    <span class="breakdown-label">Selected Receivables Amount:</span>
+                                    <span class="breakdown-value" id="eligible-sales">$0</span>
+                                </div>
+                                <div class="breakdown-row">
+                                    <span class="breakdown-label">You Will Receive:</span>
+                                    <span class="breakdown-value highlight" id="you-will-receive">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="loading-skeleton" id="loading-skeleton" style="display: none;">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line short"></div>
+                        </div>
+                    </div>
+
+
+
+                     <div class="action-section">
+                         <button class="btn-primary btn-large" onclick="showPage('offer-page')">
+                             Continue
+                             <i class="fas fa-arrow-right"></i>
+                         </button>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Forecast Selection Page (Old) -->
+        <div id="forecast-page-old" class="page">
+            <div class="page-header">
+                <button class="btn-back" onclick="showPage('landing-page')">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </button>
+                <h1>Select Your Revenue Period</h1>
+                <p>Choose the timeframe for the deliveries you want to advance</p>
+            </div>
+
+            <div class="forecast-container">
+                <div class="calendar-section">
+                    <h3>Revenue Period</h3>
+                    <div class="date-selector">
+                        <div class="date-input">
+                            <label>From</label>
+                            <input type="month" id="start-date-old" value="2025-10">
+                        </div>
+                        <div class="date-input">
+                            <label>To</label>
+                            <input type="month" id="end-date-old" value="2025-11">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="forecast-summary">
+                    <div class="summary-card">
+                        <h3>Your Revenue Forecast</h3>
+                        <div class="forecast-amount">$100,000</div>
+                        <p>Based on your verified sales history</p>
+                        <div class="forecast-details">
+                            <div class="detail-item">
+                                <span>Expected Deliveries:</span>
+                                <span>47 orders</span>
+                            </div>
+                            <div class="detail-item">
+                                <span>Average Order Value:</span>
+                                <span>$2,128</span>
+                            </div>
+                            <div class="detail-item">
+                                <span>Delivery Period:</span>
+                                <span>Oct 2025 - Nov 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-section">
+                    <button class="btn-primary btn-large" onclick="showPage('offer-page')">
+                        Continue to Offer
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offer Summary Page -->
+        <div id="offer-page" class="page offer-page">
+            <div class="page-header">
+                <button class="btn-back" onclick="showPage('forecast-page')">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </button>
+                <h1>Your Advance Offer</h1>
+                <p>Review your advance amount and repayment details</p>
+            </div>
+
+            <div class="offer-container">
+                <div class="offer-breakdown">
+                    <div class="breakdown-card">
+                        <div class="breakdown-section">
+                            <h3>Receivables Amount</h3>
+                            <div class="amount-large">$0</div>
+                        </div>
+                        
+                        <div class="breakdown-section highlight">
+                            <h3>Advance Amount</h3>
+                            <div class="amount-large primary">$0</div>
+                       
+                        </div>
+                        
+                        <div class="breakdown-section">
+                            <h3>Repayment Source</h3>
+                            <p class="repayment-text">Will be collected automatically from your order payouts until we have collected the full receiveables amount</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="selected-orders-section">
+                                         <button id="show-orders-btn" class="btn-secondary" onclick="toggleOrdersTable('offer')">
+                        <i class="fas fa-list"></i>
+                        Show Selected Orders
+                    </button>
+                    
+                    <div id="orders-table-container" class="orders-table-container" style="display: none;">
+                        <h3>Selected Orders</h3>
+                        <div class="table-container">
+                            <table id="orders-table" class="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th>Transaction ID</th>
+                                        <th>Event ID</th>
+                                        <th>Event Date/Time</th>
+                                        <th>Event Name</th>
+                                        <th>Potential Exposure USD</th>
+                                        <th>Must Ship By Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-table-body">
+                                    <!-- Orders will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination-controls" id="pagination-controls" style="display: none;">
+                            <div class="pagination-info">
+                                <span id="pagination-info">Showing 1-100 of 0 orders</span>
+                            </div>
+                            <div class="pagination-buttons">
+                                <button id="prev-page" class="btn-secondary btn-small" onclick="changePage('offer', -1)" disabled>
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </button>
+                                <span id="page-numbers" class="page-numbers"></span>
+                                <button id="next-page" class="btn-secondary btn-small" onclick="changePage('offer', 1)" disabled>
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="customize-section">
+                    <h3>Customize Amount</h3>
+                    <div class="slider-container">
+                        <input type="range" id="amount-slider" min="0" max="0" value="0" class="amount-slider">
+                        <div class="slider-labels">
+                            <span>$0</span>
+                            <span>$0</span>
+                        </div>
+                        <div class="slider-value">
+                            <span id="slider-amount">$0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-details">
+                        <div class="detail-row">
+                            <span>Advance Amount:</span>
+                            <span id="slider-advance">$0</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Fee:</span>
+                            <span id="slider-fee">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="offer-actions">
+                    <button class="btn-primary btn-large" onclick="showPage('terms-page')">
+                        Accept Offer
+                    </button>
+                    <button class="btn-secondary" onclick="showPage('forecast-page')">
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms & Agreement Page -->
+        <div id="terms-page" class="page">
+            <div class="page-header">
+                <button class="btn-back" onclick="showPage('offer-page')">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </button>
+                <h1>Review & Agree to Terms</h1>
+                <p>Confirm your understanding and acceptance of the agreement</p>
+            </div>
+
+            <div class="terms-container">
+                <div class="terms-card">
+                    <div class="agreement-summary">
+                        <h3>Agreement Summary</h3>
+                        <ul class="agreement-list">
+                            <li>You will receive <strong id="terms-advance-amount">$0</strong> upfront today</li>
+                            <li>You are expected to deliver <strong id="terms-receivables-amount">$0</strong> worth of goods between Oct–Nov 2025</li>
+                            <li>Repayments will be deducted automatically from those payouts</li>
+                            <li>If deliveries fall short, the difference will be reconciled</li>
+                        </ul>
+                    </div>
+
+                    <div class="agreement-section">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="agree-terms" class="checkbox">
+                            <label for="agree-terms">
+                                I agree to the terms and authorize early payout deduction
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="terms-actions">
+                        <button class="btn-primary btn-large" id="get-paid-btn" onclick="showPage('confirmation-page')" disabled>
+                            Get Paid Now
+                        </button>
+                        <button class="btn-secondary" onclick="showPage('offer-page')">
+                            Go Back
+                        </button>
+                    </div>
+
+                    <div class="support-footer">
+                        <a href="#" class="support-link">
+                            <i class="fas fa-question-circle"></i>
+                            Have questions? Contact support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Page -->
+        <div id="confirmation-page" class="page">
+            <div class="confirmation-container">
+                <div class="success-animation">
+                    <div class="checkmark">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+                
+                <div class="confirmation-content">
+                    <h1>You're All Set!</h1>
+                    <p>$93,000 is being transferred to your connected bank account.</p>
+                    
+                    <div class="timeline-panel">
+                        <h3>Repayment Timeline</h3>
+                        <div class="timeline-details">
+                            <div class="timeline-item">
+                                <div class="timeline-label">Delivery window:</div>
+                                <div class="timeline-value">Oct 1 – Nov 30, 2025</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-label">Total repayment:</div>
+                                <div class="timeline-value">$100,000</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-label">Estimated weekly deduction:</div>
+                                <div class="timeline-value">~$11,500/week</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirmation-actions">
+                        <button class="btn-primary" onclick="showPage('forecast-page')">
+                            Return to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ion-rangeslider@2.3.1/js/ion.rangeSlider.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
