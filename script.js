@@ -6,6 +6,8 @@ let selectedBars = [];
 let chartAnimationFrame = null;
 let lastChartUpdate = 0;
 const CHART_UPDATE_THROTTLE = 100; // ms
+// Global variable to store current advance amount for chart display
+let currentAdvanceAmount = 0;
 
 // Pagination variables
 let currentPage = 1;
@@ -533,7 +535,12 @@ function getOrdersForSelectedBars() {
 function updateRevenueDisplay(amount) {
     const revenueAmount = document.getElementById('revenue-amount');
     if (revenueAmount) {
-        revenueAmount.textContent = '$' + amount.toLocaleString();
+        // Format with commas and 2 decimal places
+        const formattedAmount = parseFloat(amount).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        revenueAmount.textContent = '$' + formattedAmount;
     }
 }
 
@@ -617,6 +624,9 @@ function updateAdvanceCalculation() {
     
     const advanceAmount = receivablesAmount - totalFees;
     
+    // Store the current advance amount globally for chart display
+    currentAdvanceAmount = advanceAmount;
+    
     console.log('Advance calculation:', {
         receivablesAmount,
         totalFees,
@@ -646,11 +656,21 @@ function updateAdvanceCalculation() {
         console.log('Updated order count to:', count);
     }
     
-    // Update revenue display in chart center
-    updateRevenueDisplay(baseAmount || 0);
+    // Update revenue display in chart center - show the "You Will Receive" amount instead of receivables
+    updateRevenueDisplay(advanceAmount || 0);
     
-    eligibleSalesElement.textContent = '$' + (receivablesAmount || 0).toLocaleString();
-    youWillReceiveElement.textContent = '$' + (advanceAmount || 0).toLocaleString();
+    // Format with commas and 2 decimal places
+    const formattedReceivables = parseFloat(receivablesAmount || 0).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    const formattedAdvance = parseFloat(advanceAmount || 0).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    eligibleSalesElement.textContent = '$' + formattedReceivables;
+    youWillReceiveElement.textContent = '$' + formattedAdvance;
     
     // Update orders table if it's visible on forecast page
     const forecastTableContainer = document.getElementById('orders-table-container-forecast');
@@ -724,6 +744,9 @@ function calculateOfferDetails() {
     
     const advanceAmount = receivablesAmount - totalFees;
     
+    // Store the current advance amount globally for chart display
+    currentAdvanceAmount = advanceAmount;
+    
     console.log('Offer calculation:', {
         receivablesAmount,
         totalFees,
@@ -749,7 +772,11 @@ function populateOfferPage() {
         // Update receivables amount - find the first amount-large element
         const receivablesElements = document.querySelectorAll('#offer-page .amount-large');
         if (receivablesElements.length > 0) {
-            receivablesElements[0].textContent = '$' + offerDetails.receivablesAmount.toLocaleString();
+            const formattedReceivables = parseFloat(offerDetails.receivablesAmount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            receivablesElements[0].textContent = '$' + formattedReceivables;
         } else {
             console.error('Receivables element not found');
         }
@@ -757,7 +784,11 @@ function populateOfferPage() {
         // Update advance amount - find the amount-large element with primary class
         const advanceElements = document.querySelectorAll('#offer-page .amount-large.primary');
         if (advanceElements.length > 0) {
-            advanceElements[0].textContent = '$' + offerDetails.advanceAmount.toLocaleString();
+            const formattedAdvance = parseFloat(offerDetails.advanceAmount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            advanceElements[0].textContent = '$' + formattedAdvance;
         } else {
             console.error('Advance amount element not found');
         }
@@ -797,7 +828,11 @@ function populateOfferPage() {
         // Update slider value display
         const sliderValueElement = document.getElementById('slider-amount');
         if (sliderValueElement) {
-            sliderValueElement.textContent = '$' + offerDetails.advanceAmount.toLocaleString();
+            const formattedSliderAmount = parseFloat(offerDetails.advanceAmount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            sliderValueElement.textContent = '$' + formattedSliderAmount;
         }
         
         // Update slider details
@@ -815,11 +850,19 @@ function updateSliderDetails(advanceAmount, totalFees) {
     const sliderFeeElement = document.getElementById('slider-fee');
     
     if (sliderAdvanceElement) {
-        sliderAdvanceElement.textContent = '$' + advanceAmount.toLocaleString();
+        const formattedAdvance = parseFloat(advanceAmount).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        sliderAdvanceElement.textContent = '$' + formattedAdvance;
     }
     
     if (sliderFeeElement) {
-        sliderFeeElement.textContent = '$' + totalFees.toLocaleString();
+        const formattedFees = parseFloat(totalFees).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        sliderFeeElement.textContent = '$' + formattedFees;
     }
 }
 
@@ -834,11 +877,19 @@ function populateTermsPage() {
     const termsReceivablesElement = document.getElementById('terms-receivables-amount');
     
     if (termsAdvanceElement) {
-        termsAdvanceElement.textContent = '$' + offerDetails.advanceAmount.toLocaleString();
+        const formattedTermsAdvance = parseFloat(offerDetails.advanceAmount).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        termsAdvanceElement.textContent = '$' + formattedTermsAdvance;
     }
     
     if (termsReceivablesElement) {
-        termsReceivablesElement.textContent = '$' + offerDetails.receivablesAmount.toLocaleString();
+        const formattedTermsReceivables = parseFloat(offerDetails.receivablesAmount).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        termsReceivablesElement.textContent = '$' + formattedTermsReceivables;
     }
 }
 
@@ -893,14 +944,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Try to load the CSV file automatically
     loadDefaultCSV().then(() => {
-        // Create chart after CSV is loaded
-        createSalesChart();
-        // Initial calculation
+        // Initial calculation first
         updateAdvanceCalculation();
+        // Create chart after CSV is loaded and calculation is complete
+        createSalesChart();
     }).catch(() => {
         // If CSV fails, still create empty chart
-        createSalesChart();
         updateAdvanceCalculation();
+        createSalesChart();
     });
 });
 
@@ -1027,6 +1078,12 @@ function createSalesChart() {
     
     // Find max value for scaling
     const maxValue = Math.max(...chartData.values);
+    
+    // Update the chart display with current calculated amount
+    // Use the global variable that stores the current advance amount
+    if (currentAdvanceAmount > 0) {
+        updateRevenueDisplay(currentAdvanceAmount);
+    }
     
     // Draw grid lines with modern styling
     ctx.strokeStyle = '#f1f5f9';
