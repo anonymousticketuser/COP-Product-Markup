@@ -38,36 +38,37 @@
     <!-- Page Container -->
     <div id="page-container">
         <!-- Sales Forecast Selection Page -->
-        <div id="forecast-page" class="page active">
+        <div id="forecast-page" class="page">
             <div class="page-header">
                 <h1>Confirmed Order Purchase Program</h1>
                 <p>Choose the order period you'd like to receive an advance for. We'll calculate your expected receivables amount and advance amount.</p>
             </div>
-            <div class="forecast-container">
-                <div class="forecast-card">
-                    <div class="date-section">
+
+            <div class="forecast-container"><!-- open forecast-container -->
+                <div class="forecast-card"><!-- open forecast-card -->
+
+                    <div class="date-section"><!-- open date-section -->
                         <h3>Delivery Period</h3>
                         <div class="date-selector">
                             <div class="date-input">
                                 <label>Date Range</label>
                                 <div class="slider-container">
-                                    <input type="range" id="date-range-slider" class="date-range-slider" min="0" max="100" value="0,30" style="display: none;">
+                                    <input type="range" id="date-range-slider" class="date-range-slider" min="0" max="100" value="0,30" style="display:none;">
                                     <div class="slider-labels">
                                         <span id="date-range-label">Loading...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                     
+                                    </div><!-- /slider-labels -->
+                                </div><!-- /slider-container -->
+                            </div><!-- /date-input -->
+                        </div><!-- /date-selector -->
+                    </div><!-- /date-section ✅ ADDED CLOSE -->
 
-                    <div class="sales-chart-section">
+                    <div class="sales-chart-section"><!-- open sales-chart-section -->
                         <div class="selected-orders-section">
                             <button id="show-orders-btn-forecast" class="btn-secondary" onclick="toggleOrdersTable('forecast')">
-                                <i class="fas fa-list"></i>
-                                Show Selected Orders
+                                <i class="fas fa-list"></i> Show Selected Orders
                             </button>
-                            
-                            <div id="orders-table-container-forecast" class="orders-table-container" style="display: none;">
+
+                            <div id="orders-table-container-forecast" class="orders-table-container" style="display:none;">
                                 <h3>Selected Orders</h3>
                                 <div class="table-container">
                                     <table id="orders-table-forecast" class="orders-table">
@@ -81,12 +82,10 @@
                                                 <th>Must Ship By Date</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="orders-table-body-forecast">
-                                            <!-- Orders will be populated here -->
-                                        </tbody>
+                                        <tbody id="orders-table-body-forecast"></tbody>
                                     </table>
                                 </div>
-                                <div class="pagination-controls" id="pagination-controls-forecast" style="display: none;">
+                                <div class="pagination-controls" id="pagination-controls-forecast" style="display:none;">
                                     <div class="pagination-info">
                                         <span id="pagination-info-forecast">Showing 1-100 of 0 orders</span>
                                     </div>
@@ -100,9 +99,9 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        
+                            </div><!-- /orders-table-container-forecast -->
+                        </div><!-- /selected-orders-section -->
+
                         <h3>Daily Sales Overview</h3>
                         <div class="chart-container">
                             <div class="chart-overlay">
@@ -115,16 +114,14 @@
                         </div>
                         <div class="chart-controls">
                             <div class="chart-legend">
-                                
                                 <div class="legend-item">
                                     <span class="legend-color orange"></span>
                                     <span>Selected Range</span>
                                 </div>
-                              
                             </div>
-                            <p class="chart-note">Hover over bars to see daily totals • Click bars to select custom days • Drag slider to adjust range</p>
+                            <p class="chart-note">Hover over bars to see daily totals • Drag slider to adjust range</p>
                         </div>
-                    </div>
+                    </div><!-- /sales-chart-section ✅ ADDED CLOSE -->
 
                     <div class="forecast-summary">
                         <div class="summary-section">
@@ -132,11 +129,9 @@
                             <div class="forecast-amount" id="forecast-amount">$0</div>
                             <p class="forecast-note">Based on <span id="order-count">0</span> orders for selected period</p>
                         </div>
-                        
+
                         <div class="advance-section">
                             <h3>Advance Breakdown</h3>
-                           
-                            
                             <div class="advance-breakdown">
                                 <div class="breakdown-row">
                                     <span class="breakdown-label">Selected Receivables Amount:</span>
@@ -148,81 +143,22 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="loading-skeleton" id="loading-skeleton" style="display: none;">
+
+                        <div class="loading-skeleton" id="loading-skeleton" style="display:none;">
                             <div class="skeleton-line"></div>
                             <div class="skeleton-line short"></div>
                         </div>
+                    </div><!-- /forecast-summary -->
+
+                    <div class="action-section">
+                        <button class="btn-primary btn-large" onclick="showPage('offer-page')">
+                            Continue <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
 
-
-
-                     <div class="action-section">
-                         <button class="btn-primary btn-large" onclick="showPage('offer-page')">
-                             Continue
-                             <i class="fas fa-arrow-right"></i>
-                         </button>
-                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sales Forecast Selection Page (Old) -->
-        <div id="forecast-page-old" class="page">
-            <div class="page-header">
-                <button class="btn-back" onclick="showPage('landing-page')">
-                    <i class="fas fa-arrow-left"></i>
-                    Back
-                </button>
-                <h1>Select Your Revenue Period</h1>
-                <p>Choose the timeframe for the deliveries you want to advance</p>
-            </div>
-
-            <div class="forecast-container">
-                <div class="calendar-section">
-                    <h3>Revenue Period</h3>
-                    <div class="date-selector">
-                        <div class="date-input">
-                            <label>From</label>
-                            <input type="month" id="start-date-old" value="2025-10">
-                        </div>
-                        <div class="date-input">
-                            <label>To</label>
-                            <input type="month" id="end-date-old" value="2025-11">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="forecast-summary">
-                    <div class="summary-card">
-                        <h3>Your Revenue Forecast</h3>
-                        <div class="forecast-amount">$100,000</div>
-                        <p>Based on your verified sales history</p>
-                        <div class="forecast-details">
-                            <div class="detail-item">
-                                <span>Expected Deliveries:</span>
-                                <span>47 orders</span>
-                            </div>
-                            <div class="detail-item">
-                                <span>Average Order Value:</span>
-                                <span>$2,128</span>
-                            </div>
-                            <div class="detail-item">
-                                <span>Delivery Period:</span>
-                                <span>Oct 2025 - Nov 2025</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-section">
-                    <button class="btn-primary btn-large" onclick="showPage('offer-page')">
-                        Continue to Offer
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+                </div><!-- /forecast-card -->
+            </div><!-- /forecast-container -->
+        </div><!-- /#forecast-page -->
 
         <!-- Offer Summary Page -->
         <div id="offer-page" class="page offer-page">
@@ -257,7 +193,7 @@
                 </div>
 
                 <div class="selected-orders-section">
-                                         <button id="show-orders-btn" class="btn-secondary" onclick="toggleOrdersTable('offer')">
+                    <button id="show-orders-btn" class="btn-secondary" onclick="toggleOrdersTable('offer')">
                         <i class="fas fa-list"></i>
                         Show Selected Orders
                     </button>

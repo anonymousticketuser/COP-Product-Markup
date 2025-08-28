@@ -24,6 +24,9 @@ body {
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    width: 75%;
+    margin: auto;
+    border-radius: 24px;
 }
 
 .header-container {
@@ -184,22 +187,22 @@ body {
 /* Page Container */
 #page-container {
     min-height: calc(100vh - 70px);
+    width: 100%;
+    position: relative;
 }
 
-.page {
+#page-container > .page {
     display: none;
     max-width: 100%;
     margin: 0 auto;
     padding: 0;
+    width: 100%;
 }
 
-#page-container .page.active,
-.page.active,
-div.page.active,
-.page[class*="active"] {
+#page-container > .page.active {
     display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    width: 100% !important;
+    min-height: 100vh !important;
 }
 
 /* Override any inline styles that might be set */
@@ -217,10 +220,66 @@ div.page.active[style*="display: none"] {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+}
+
+/* Page-specific CSS to avoid conflicts */
+#forecast-page.page.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1 !important;
+}
+
+#offer-page.page.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1 !important;
+}
+
+#terms-page.page.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1 !important;
+}
+
+#confirmation-page.page.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1 !important;
 }
 
 /* Forecast Page */
-.forecast-card {
+#forecast-page .forecast-card {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(20px);
     border-radius: 24px;
@@ -229,6 +288,15 @@ div.page.active[style*="display: none"] {
     max-width: 100%;
     margin: 0 auto;
     border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Ensure forecast page content is independent */
+#forecast-page .page-header,
+#forecast-page .forecast-container,
+#forecast-page .forecast-card {
+    display: block;
+    visibility: visible;
+    opacity: 1;
 }
 
 .date-section {
@@ -982,9 +1050,21 @@ div.page.active[style*="display: none"] {
 }
 
 /* Offer Page */
-.offer-container {
+#offer-page .offer-container {
     max-width: 800px;
     margin: 0 auto;
+}
+
+/* Ensure offer page content is independent */
+#offer-page .page-header,
+#offer-page .offer-container,
+#offer-page .offer-breakdown,
+#offer-page .selected-orders-section,
+#offer-page .customize-section,
+#offer-page .offer-actions {
+    display: block;
+    visibility: visible;
+    opacity: 1;
 }
 
 .offer-breakdown {

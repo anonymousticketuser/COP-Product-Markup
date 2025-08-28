@@ -17,21 +17,19 @@ let currentOrders = [];
 function showPage(pageId) {
     console.log('Navigating to page:', pageId);
     
-            // Hide all pages
-        const pages = document.querySelectorAll('.page');
-        pages.forEach(page => {
-            page.classList.remove('active');
-        });
+    // Hide all pages - only target top-level pages
+    const pages = document.querySelectorAll('#page-container > .page');
+    pages.forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    // Show target page
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.add('active');
         
-        // Show target page
-        const targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            
-                    // Force the page to be visible with inline styles
-        targetPage.style.setProperty('display', 'block', 'important');
-        targetPage.style.setProperty('visibility', 'visible', 'important');
-        targetPage.style.setProperty('opacity', '1', 'important');
+        console.log('Successfully navigated to:', pageId);
         
         // Debug: Check what CSS is actually being applied
         setTimeout(() => {
@@ -66,25 +64,38 @@ function showPage(pageId) {
             }
         }, 100);
         
-        console.log('Successfully navigated to:', pageId);
-            
-            // Scroll to top of page
-            window.scrollTo(0, 0);
-            
-            // Initialize slider if on forecast page
-            if (pageId === 'forecast-page') {
-                initializeAdvanceSlider();
+                console.log('Successfully navigated to:', pageId);
+        
+        // Debug: Check page content after navigation
+        setTimeout(() => {
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                console.log(`Page ${pageId} content:`, {
+                    innerHTML: targetPage.innerHTML.substring(0, 200) + '...',
+                    children: targetPage.children.length,
+                    firstChild: targetPage.firstElementChild?.tagName,
+                    rect: targetPage.getBoundingClientRect()
+                });
             }
-            
-            // Populate offer page if on offer page
-            if (pageId === 'offer-page') {
-                populateOfferPage();
-            }
-            
-            // Populate terms page if on terms page
-            if (pageId === 'terms-page') {
-                populateTermsPage();
-            }
+        }, 100);
+        
+        // Scroll to top of page
+        window.scrollTo(0, 0);
+        
+        // Initialize slider if on forecast page
+        if (pageId === 'forecast-page') {
+            initializeAdvanceSlider();
+        }
+        
+        // Populate offer page if on offer page
+        if (pageId === 'offer-page') {
+            populateOfferPage();
+        }
+        
+        // Populate terms page if on terms page
+        if (pageId === 'terms-page') {
+            populateTermsPage();
+        }
         } else {
             console.error('Page not found:', pageId);
         }
@@ -538,9 +549,6 @@ function updateAdvanceCalculation() {
         return;
     }
     
-    // Since we always give 100%, hardcode the percentage
-    const percentage = 100;
-    
     // Get orders for selected date range
     const dateRangeSlider = document.getElementById('date-range-slider');
     let startDate, endDate;
@@ -570,40 +578,58 @@ function updateAdvanceCalculation() {
     
     console.log('Order data:', orderData);
     console.log('Base amount:', baseAmount);
-    const eligibleAmount = (baseAmount * percentage) / 100;
     
-    // Calculate weeks between dates (default to 8 weeks if no dates selected)
-    let weeks = 8; // Default
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        weeks = Math.ceil(diffDays / 7);
-        console.log('Calculated weeks between dates:', weeks);
+    if (!orderData || !orderData.orders || orderData.orders.length === 0) {
+        eligibleSalesElement.textContent = '$0';
+        youWillReceiveElement.textContent = '$0';
+        return;
     }
     
-    // Calculate discount: 0.65% per week
-    const discountRate = 0.0065 * weeks; // 0.65% per week
-    const discountAmount = eligibleAmount * discountRate;
-    const finalAmount = eligibleAmount - discountAmount;
+    const receivablesAmount = orderData.totalAmount;
+    const orders = orderData.orders;
+    
+    // Calculate fees for each order: fee = (0.65% * weeks till in hand date) * expected proceeds
+    let totalFees = 0;
+    const ordersWithFees = orders.map(order => {
+        // Calculate weeks from order date to "in hand" date
+        // For now, assuming "in hand" date is 8 weeks from order date
+        // This could be made configurable or based on actual order data
+        const orderDate = new Date(order.date);
+        const inHandDate = new Date(orderDate);
+        inHandDate.setDate(orderDate.getDate() + 56); // 8 weeks = 56 days
+        
+        const today = new Date();
+        const weeksTillInHand = Math.max(0, Math.ceil((inHandDate - today) / (1000 * 60 * 60 * 24 * 7)));
+        
+        // Calculate fee: 0.65% per week * expected proceeds
+        const feeRate = 0.0065 * weeksTillInHand; // 0.65% per week
+        const fee = order.amount * feeRate;
+        
+        totalFees += fee;
+        
+        return {
+            ...order,
+            weeksTillInHand,
+            fee,
+            inHandDate: inHandDate.toISOString().split('T')[0]
+        };
+    });
+    
+    const advanceAmount = receivablesAmount - totalFees;
     
     console.log('Advance calculation:', {
-        percentage: percentage,
-        baseAmount: baseAmount,
-        eligibleAmount: eligibleAmount,
-        weeks: weeks,
-        discountRate: discountRate,
-        discountAmount: discountAmount,
-        finalAmount: finalAmount
+        receivablesAmount,
+        totalFees,
+        advanceAmount,
+        orderCount: orders.length,
+        ordersWithFees
     });
     
     // Update UI - ensure all values are numbers and format properly
     console.log('Updating UI elements:', {
         baseAmount: baseAmount,
-        eligibleAmount: eligibleAmount,
-        finalAmount: finalAmount,
+        receivablesAmount: receivablesAmount,
+        advanceAmount: advanceAmount,
         orderCount: orderData.orders.length
     });
     
@@ -616,15 +642,15 @@ function updateAdvanceCalculation() {
     const orderCountElement = document.getElementById('order-count');
     if (orderCountElement) {
         const count = orderData.orders.length || 0;
-        orderCountElement.textContent = count + '+';
+        orderCountElement.textContent = count.toLocaleString() + '+';
         console.log('Updated order count to:', count);
     }
     
     // Update revenue display in chart center
     updateRevenueDisplay(baseAmount || 0);
     
-    eligibleSalesElement.textContent = '$' + (eligibleAmount || 0).toLocaleString();
-    youWillReceiveElement.textContent = '$' + (finalAmount || 0).toLocaleString();
+    eligibleSalesElement.textContent = '$' + (receivablesAmount || 0).toLocaleString();
+    youWillReceiveElement.textContent = '$' + (advanceAmount || 0).toLocaleString();
     
     // Update orders table if it's visible on forecast page
     const forecastTableContainer = document.getElementById('orders-table-container-forecast');
@@ -819,6 +845,21 @@ function populateTermsPage() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing application');
+    
+    // Ensure only the forecast page is visible initially
+    console.log('Setting initial page visibility');
+    const pages = document.querySelectorAll('#page-container > .page');
+    pages.forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    // Show only the forecast page
+    const forecastPage = document.getElementById('forecast-page');
+    if (forecastPage) {
+        forecastPage.classList.add('active');
+        console.log('Forecast page set as active');
+    }
     
     // Add roundRect polyfill for older browsers
     if (!CanvasRenderingContext2D.prototype.roundRect) {
@@ -1146,8 +1187,7 @@ function createSalesChart() {
     // Add event listeners
     canvas.addEventListener('mousemove', handleChartMouseMove);
     canvas.addEventListener('mouseleave', hideTooltip);
-    canvas.addEventListener('click', handleChartClick);
-    canvas.style.cursor = 'pointer';
+    canvas.style.cursor = 'default';
 }
 
 // Simple mouse move handler
@@ -1175,51 +1215,7 @@ function handleChartMouseMove(e) {
     hideTooltip();
 }
 
-// Simple click handler
-function handleChartClick(e) {
-    const rect = e.target.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    console.log('Click detected at:', mouseX, mouseY);
-    
-    // Find which bar was clicked
-    for (let i = 0; i < chartData.barPositions.length; i++) {
-        const bar = chartData.barPositions[i];
-        
-        if (mouseX >= bar.x && mouseX <= bar.x + bar.width && 
-            mouseY >= bar.y && mouseY <= bar.y + bar.height) {
-            
-            console.log(`Clicked on bar ${i}: ${bar.label} (daily bar)`);
-            
-            // Toggle selection of this bar
-            const barIndex = selectedBars.indexOf(i);
-            if (barIndex === -1) {
-                selectedBars.push(i);
-            } else {
-                selectedBars.splice(barIndex, 1);
-            }
-            
-            // Sort selected bars
-            selectedBars.sort((a, b) => a - b);
-            
-            console.log('Updated selected bars:', selectedBars);
-            
-            // Update the advance calculation to reflect new selection
-            updateAdvanceCalculation();
-            
-            // Redraw chart with new highlighting
-            createSalesChart();
-            
-            // Update orders table if it's visible on forecast page
-            const forecastTableContainer = document.getElementById('orders-table-container-forecast');
-            if (forecastTableContainer && forecastTableContainer.style.display !== 'none') {
-                populateOrdersTable('forecast', true); // Preserve pagination
-            }
-            return;
-        }
-    }
-}
+
 
 // Simple tooltip functions
 function showTooltip(x, y, text) {
