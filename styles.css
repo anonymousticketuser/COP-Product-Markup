@@ -11,7 +11,7 @@ body {
     color: #1a1a1a;
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     min-height: 100vh;
-    width: 75%;
+    width: 50%;
     margin: auto;
 }
 
@@ -24,7 +24,7 @@ body {
     top: 0;
     z-index: 100;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    width: 75%;
+    width: 100%;
     margin: auto;
     border-radius: 24px;
 }
@@ -359,9 +359,9 @@ div.page.active[style*="display: none"] {
 
 .summary-section {
     text-align: center;
-    padding: 32px;
+    padding: 16px 20px;
     background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border-radius: 20px;
+    border-radius: 12px;
     border: 1px solid rgba(59, 130, 246, 0.1);
     position: relative;
     overflow: hidden;
@@ -378,24 +378,24 @@ div.page.active[style*="display: none"] {
 }
 
 .summary-section h3 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     color: #1e293b;
 }
 
 .forecast-amount {
-    font-size: 48px;
+    font-size: 32px;
     font-weight: 800;
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
 }
 
 .forecast-note {
-    font-size: 14px;
+    font-size: 12px;
     color: #64748b;
     font-weight: 500;
 }
@@ -1786,7 +1786,7 @@ div.page.active[style*="display: none"] {
     }
     
     .forecast-amount {
-        font-size: 36px;
+        font-size: 28px;
     }
     
     .page-header h1 {
@@ -1830,7 +1830,7 @@ div.page.active[style*="display: none"] {
     }
     
     .forecast-amount {
-        font-size: 32px;
+        font-size: 24px;
     }
     
     .btn-large {
