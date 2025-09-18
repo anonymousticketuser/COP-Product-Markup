@@ -124,6 +124,7 @@ function initializeAdvanceSlider() {
             prettify: false,
             onChange: function(data) {
                 updateDateRangeLabel(data);
+                resetMilestoneCelebrations(); // Reset celebration flags when date range changes
                 updateAdvanceCalculation();
                 throttledChartUpdate();
                 
@@ -532,15 +533,57 @@ function getOrdersForSelectedBars() {
 }
 
 // Update revenue display in the center of the chart
-function updateRevenueDisplay(amount) {
-    const revenueAmount = document.getElementById('revenue-amount');
-    if (revenueAmount) {
-        // Format with commas and 2 decimal places
-        const formattedAmount = parseFloat(amount).toLocaleString('en-US', {
+function updateRevenueDisplay(amount, baseAmount, bonus200k, bonus500k) {
+    // Update base amount
+    const revenueBaseAmount = document.getElementById('revenue-base-amount');
+    if (revenueBaseAmount) {
+        const formattedBaseAmount = parseFloat(baseAmount || 0).toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-        revenueAmount.textContent = '$' + formattedAmount;
+        revenueBaseAmount.textContent = '$' + formattedBaseAmount;
+    }
+    
+    // Update tier 1 bonus
+    const revenueBonus200kItem = document.getElementById('revenue-bonus-200k-item');
+    const revenueBonus200k = document.getElementById('revenue-bonus-200k');
+    if (revenueBonus200kItem && revenueBonus200k) {
+        if (bonus200k > 0) {
+            revenueBonus200kItem.style.display = 'flex';
+            const formattedBonus200k = parseFloat(bonus200k).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            revenueBonus200k.textContent = '$' + formattedBonus200k;
+        } else {
+            revenueBonus200kItem.style.display = 'none';
+        }
+    }
+    
+    // Update tier 2 bonus
+    const revenueBonus500kItem = document.getElementById('revenue-bonus-500k-item');
+    const revenueBonus500k = document.getElementById('revenue-bonus-500k');
+    if (revenueBonus500kItem && revenueBonus500k) {
+        if (bonus500k > 0) {
+            revenueBonus500kItem.style.display = 'flex';
+            const formattedBonus500k = parseFloat(bonus500k).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            revenueBonus500k.textContent = '$' + formattedBonus500k;
+        } else {
+            revenueBonus500kItem.style.display = 'none';
+        }
+    }
+    
+    // Update total amount
+    const revenueTotalAmount = document.getElementById('revenue-total-amount');
+    if (revenueTotalAmount) {
+        const formattedAmount = parseFloat(amount || 0).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        revenueTotalAmount.textContent = '$' + formattedAmount;
     }
 }
 
@@ -596,6 +639,7 @@ function updateAdvanceCalculation() {
     const orders = orderData.orders;
     
     // Calculate fees for each order: fee = (0.65% * weeks till in hand date) * expected proceeds
+    // Plus tiered bonuses: +50 bps at $200k, +50 bps at $500k
     let totalFees = 0;
     const ordersWithFees = orders.map(order => {
         // Calculate weeks from order date to "in hand" date
@@ -608,9 +652,11 @@ function updateAdvanceCalculation() {
         const today = new Date();
         const weeksTillInHand = Math.max(0, Math.ceil((inHandDate - today) / (1000 * 60 * 60 * 24 * 7)));
         
-        // Calculate fee: 0.65% per week * expected proceeds
-        const feeRate = 0.0065 * weeksTillInHand; // 0.65% per week
-        const fee = order.amount * feeRate;
+        // Calculate base fee: 0.65% per week * expected proceeds
+        const baseFeeRate = 0.0065 * weeksTillInHand; // 0.65% per week
+        let fee = order.amount * baseFeeRate;
+        
+        // Note: Tiered bonuses are now calculated as rebates separately, not as additional fees
         
         totalFees += fee;
         
@@ -622,14 +668,33 @@ function updateAdvanceCalculation() {
         };
     });
     
-    const advanceAmount = receivablesAmount - totalFees;
+    // Calculate base fees first
+    const baseFees = ordersWithFees.reduce((sum, order) => {
+        const baseFeeRate = 0.0065 * order.weeksTillInHand;
+        return sum + (order.amount * baseFeeRate);
+    }, 0);
+    
+    // Calculate net receivables amount (receivables - base fee) for milestone checking
+    const netReceivables = receivablesAmount - baseFees;
+    
+    // Calculate bonuses as rebates (money back) based on net receivables amount
+    const bonus200k = netReceivables >= 200000 ? netReceivables * 0.005 : 0;
+    const bonus500k = netReceivables >= 500000 ? netReceivables * 0.005 : 0;
+    
+    // Calculate final advance amount: receivables - base fees + bonuses
+    const advanceAmount = receivablesAmount - baseFees + bonus200k + bonus500k;
     
     // Store the current advance amount globally for chart display
     currentAdvanceAmount = advanceAmount;
     
+    // Update gamified achievement system
+    updateAchievementProgress(receivablesAmount, baseFees, ordersWithFees);
+    
     console.log('Advance calculation:', {
         receivablesAmount,
-        totalFees,
+        baseFees,
+        bonus200k,
+        bonus500k,
         advanceAmount,
         orderCount: orders.length,
         ordersWithFees
@@ -656,8 +721,12 @@ function updateAdvanceCalculation() {
         console.log('Updated order count to:', count);
     }
     
-    // Update revenue display in chart center - show the "You Will Receive" amount instead of receivables
-    updateRevenueDisplay(advanceAmount || 0);
+    // Update revenue display in chart center - show the breakdown
+    const netReceivablesForDisplay = receivablesAmount - baseFees;
+    updateRevenueDisplay(advanceAmount || 0, netReceivablesForDisplay, bonus200k, bonus500k);
+    
+    // Update breakdown display - total fees is just the base fee since bonuses are rebates
+    updateBreakdownDisplay(receivablesAmount, baseFees, bonus200k, bonus500k, baseFees, advanceAmount);
     
     // Format with commas and 2 decimal places
     const formattedReceivables = parseFloat(receivablesAmount || 0).toLocaleString('en-US', {
@@ -716,6 +785,7 @@ function calculateOfferDetails() {
     const orders = orderData.orders;
     
     // Calculate fees for each order: fee = (0.65% * weeks till in hand date) * expected proceeds
+    // Plus tiered bonuses: +50 bps at $200k, +50 bps at $500k
     let totalFees = 0;
     const ordersWithFees = orders.map(order => {
         // Calculate weeks from order date to "in hand" date
@@ -728,9 +798,11 @@ function calculateOfferDetails() {
         const today = new Date();
         const weeksTillInHand = Math.max(0, Math.ceil((inHandDate - today) / (1000 * 60 * 60 * 24 * 7)));
         
-        // Calculate fee: 0.65% per week * expected proceeds
-        const feeRate = 0.0065 * weeksTillInHand; // 0.65% per week
-        const fee = order.amount * feeRate;
+        // Calculate base fee: 0.65% per week * expected proceeds
+        const baseFeeRate = 0.0065 * weeksTillInHand; // 0.65% per week
+        let fee = order.amount * baseFeeRate;
+        
+        // Note: Tiered bonuses are now calculated as rebates separately, not as additional fees
         
         totalFees += fee;
         
@@ -742,14 +814,30 @@ function calculateOfferDetails() {
         };
     });
     
-    const advanceAmount = receivablesAmount - totalFees;
+    // Calculate base fees first
+    const baseFees = ordersWithFees.reduce((sum, order) => {
+        const baseFeeRate = 0.0065 * order.weeksTillInHand;
+        return sum + (order.amount * baseFeeRate);
+    }, 0);
+    
+    // Calculate net receivables amount (receivables - base fee) for milestone checking
+    const netReceivables = receivablesAmount - baseFees;
+    
+    // Calculate bonuses as rebates (money back) based on net receivables amount
+    const bonus200k = netReceivables >= 200000 ? netReceivables * 0.005 : 0;
+    const bonus500k = netReceivables >= 500000 ? netReceivables * 0.005 : 0;
+    
+    // Calculate final advance amount: receivables - base fees + bonuses
+    const advanceAmount = receivablesAmount - baseFees + bonus200k + bonus500k;
     
     // Store the current advance amount globally for chart display
     currentAdvanceAmount = advanceAmount;
     
     console.log('Offer calculation:', {
         receivablesAmount,
-        totalFees,
+        baseFees,
+        bonus200k,
+        bonus500k,
         advanceAmount,
         orderCount: orders.length,
         ordersWithFees
@@ -757,7 +845,7 @@ function calculateOfferDetails() {
     
     return {
         receivablesAmount,
-        totalFees,
+        totalFees: baseFees, // Total fees is just the base fee since bonuses are rebates
         advanceAmount,
         orders: ordersWithFees
     };
@@ -959,7 +1047,8 @@ document.addEventListener('DOMContentLoaded', function() {
 let chartData = {
     labels: [],
     values: [],
-    barPositions: []
+    barPositions: [],
+    earliestDate: null
 };
 
 // Create Sales Chart - Daily data visualization
@@ -1027,6 +1116,9 @@ function createSalesChart() {
     const earliestDate = new Date(orderDates[0]);
     const latestDate = new Date(orderDates[orderDates.length - 1]);
     
+    // Store earliestDate in chartData for use in tooltips
+    chartData.earliestDate = earliestDate;
+    
     console.log('Chart data range:', earliestDate.toISOString(), 'to', latestDate.toISOString());
     
     // Create daily data structure for the actual order date range
@@ -1079,11 +1171,8 @@ function createSalesChart() {
     // Find max value for scaling
     const maxValue = Math.max(...chartData.values);
     
-    // Update the chart display with current calculated amount
-    // Use the global variable that stores the current advance amount
-    if (currentAdvanceAmount > 0) {
-        updateRevenueDisplay(currentAdvanceAmount);
-    }
+    // Note: Revenue display is updated by the main calculation function
+    // No need to update it here as it would overwrite the correct values
     
     // Draw grid lines with modern styling
     ctx.strokeStyle = '#f1f5f9';
@@ -1133,21 +1222,18 @@ function createSalesChart() {
         
         // Bar color - selected bars are teal, in-range bars are highlighted, others are purple
         if (selectedBars.includes(index)) {
-            console.log(`Bar ${index} is selected - coloring teal`);
             // Create gradient for selected bars
             const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
             gradient.addColorStop(0, '#10b981');
             gradient.addColorStop(1, '#059669');
             ctx.fillStyle = gradient;
         } else if (isInSelectedRange) {
-            console.log(`Bar ${index} is in selected range - coloring orange`);
             // Create gradient for range bars
             const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
             gradient.addColorStop(0, '#f59e0b');
             gradient.addColorStop(1, '#f97316');
             ctx.fillStyle = gradient;
         } else {
-            console.log(`Bar ${index} is regular - coloring purple`);
             // Create gradient for regular bars
             const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
             gradient.addColorStop(0, '#8b5cf6');
@@ -1225,6 +1311,48 @@ function createSalesChart() {
         }
     }
     
+    // Draw milestone lines (200k and 500k)
+    const milestone200k = 200000;
+    const milestone500k = 500000;
+    
+    // Draw 200k milestone line
+    if (milestone200k <= maxValue) {
+        const y200k = padding + chartHeight - (milestone200k / maxValue) * chartHeight;
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(padding, y200k);
+        ctx.lineTo(width - padding, y200k);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Add 200k label
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '600 12px Inter';
+        ctx.textAlign = 'left';
+        ctx.fillText('🏆 $200K Milestone', padding + 10, y200k - 5);
+    }
+    
+    // Draw 500k milestone line
+    if (milestone500k <= maxValue) {
+        const y500k = padding + chartHeight - (milestone500k / maxValue) * chartHeight;
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(padding, y500k);
+        ctx.lineTo(width - padding, y500k);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Add 500k label
+        ctx.fillStyle = '#10b981';
+        ctx.font = '600 12px Inter';
+        ctx.textAlign = 'left';
+        ctx.fillText('💎 $500K Milestone', padding + 10, y500k - 5);
+    }
+
     // Draw Y-axis labels with modern styling
     ctx.fillStyle = '#64748b';
     ctx.font = '600 12px Inter';
@@ -1260,12 +1388,30 @@ function handleChartMouseMove(e) {
         if (mouseX >= bar.x && mouseX <= bar.x + bar.width && 
             mouseY >= bar.y && mouseY <= bar.y + bar.height) {
             
-            console.log(`Hovering over bar ${i}: ${bar.label} - $${bar.value.toLocaleString()} (daily total)`);
-            
-            // Show tooltip
-            const tooltipX = rect.left + bar.x + bar.width / 2;
-            const tooltipY = rect.top + bar.y - 10;
-            showTooltip(tooltipX, tooltipY, `${bar.label}: $${bar.value.toLocaleString()}`);
+            // Calculate the actual date for this bar
+            if (chartData.earliestDate) {
+                const barDate = new Date(chartData.earliestDate);
+                barDate.setDate(chartData.earliestDate.getDate() + i);
+                const formattedDate = barDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+                
+                console.log(`Hovering over bar ${i}: ${formattedDate} - $${bar.value.toLocaleString()} (daily total)`);
+                
+                // Show tooltip with date and amount
+                const tooltipX = rect.left + bar.x + bar.width / 2;
+                const tooltipY = rect.top + bar.y - 10;
+                showTooltip(tooltipX, tooltipY, `${formattedDate}: $${bar.value.toLocaleString()}`);
+            } else {
+                // Fallback to just the amount if date is not available
+                console.log(`Hovering over bar ${i}: ${bar.label} - $${bar.value.toLocaleString()} (daily total)`);
+                
+                const tooltipX = rect.left + bar.x + bar.width / 2;
+                const tooltipY = rect.top + bar.y - 10;
+                showTooltip(tooltipX, tooltipY, `${bar.label}: $${bar.value.toLocaleString()}`);
+            }
             return;
         }
     }
@@ -1878,7 +2024,282 @@ function hidePagination(pageType) {
     }
 }
 
+// Gamified Achievement System Functions
+let milestone200kCelebrated = false;
+let milestone500kCelebrated = false;
+let previousAdvanceAmount = 0;
+let confettiInProgress = false;
+let confettiCallCount = 0;
+
+// Reset celebration flags when date range changes
+function resetMilestoneCelebrations() {
+    milestone200kCelebrated = false;
+    milestone500kCelebrated = false;
+    // Don't reset previousAdvanceAmount - we want to track it across slider movements
+    confettiInProgress = false;
+    confettiCallCount = 0;
+}
+
+function updateAchievementProgress(receivablesAmount, baseFees, ordersWithFees) {
+    // Calculate the net receivables amount (receivables - base fee) for milestone checking
+    const netReceivables = receivablesAmount - baseFees;
+    
+    // Calculate bonuses based on net receivables
+    const bonus200k = netReceivables >= 200000 ? netReceivables * 0.005 : 0;
+    const bonus500k = netReceivables >= 500000 ? netReceivables * 0.005 : 0;
+    
+    // Calculate final advance amount: receivables - base fees + bonuses
+    const advanceAmount = receivablesAmount - baseFees + bonus200k + bonus500k;
+    
+    console.log('Updating achievement progress for net receivables:', netReceivables, 'previous:', previousAdvanceAmount);
+    
+    // Update 200k milestone (based on net receivables amount, not final advance)
+    const achieved200k = updateMilestoneProgress('200k', netReceivables, 200000, '🏆', 'First Tier Bonus', 'Extra 0.5% payout bonus');
+    
+    // Update 500k milestone (based on net receivables amount, not final advance)
+    const achieved500k = updateMilestoneProgress('500k', netReceivables, 500000, '💎', 'Elite Tier Bonus', 'Extra 1% total payout bonus');
+    
+    // Check for threshold crossings - ONLY when going UP and crossing the exact threshold
+    // Also check that the net receivables amount has actually changed significantly
+    const hasSignificantChange = Math.abs(netReceivables - previousAdvanceAmount) > 100;
+    const crossed200kUpward = previousAdvanceAmount < 200000 && netReceivables >= 200000 && hasSignificantChange;
+    const crossed500kUpward = previousAdvanceAmount < 500000 && netReceivables >= 500000 && hasSignificantChange;
+    
+    // Update previous amount immediately after threshold checks to prevent repeated confetti
+    previousAdvanceAmount = netReceivables;
+    
+    console.log('Threshold check:', {
+        previous: previousAdvanceAmount,
+        current: netReceivables,
+        hasSignificantChange: hasSignificantChange,
+        crossed200k: crossed200kUpward,
+        crossed500k: crossed500kUpward,
+        milestone200kCelebrated: milestone200kCelebrated,
+        milestone500kCelebrated: milestone500kCelebrated,
+        confettiInProgress: confettiInProgress
+    });
+    
+    // One-time confetti celebrations - only when crossing thresholds upward
+    if (crossed200kUpward && !milestone200kCelebrated && !confettiInProgress) {
+        confettiCallCount++;
+        console.log('🎉 Crossing 200k advance amount threshold upward - triggering confetti! (Call #' + confettiCallCount + ')');
+        confettiInProgress = true;
+        showCelebrationEffect('200k', 'First Tier Bonus');
+        milestone200kCelebrated = true;
+        // Reset confetti flag after a delay
+        setTimeout(() => { confettiInProgress = false; }, 3000);
+    }
+    
+    if (crossed500kUpward && !milestone500kCelebrated && !confettiInProgress) {
+        confettiCallCount++;
+        console.log('🎉 Crossing 500k advance amount threshold upward - triggering confetti! (Call #' + confettiCallCount + ')');
+        confettiInProgress = true;
+        showCelebrationEffect('500k', 'Elite Tier Bonus');
+        milestone500kCelebrated = true;
+        // Reset confetti flag after a delay
+        setTimeout(() => { confettiInProgress = false; }, 3000);
+    }
+}
+
+function updateMilestoneProgress(milestoneId, currentAmount, targetAmount, icon, title, description) {
+    const milestoneItem = document.getElementById(`milestone-${milestoneId}`);
+    const progressFill = document.getElementById(`progress-${milestoneId}`);
+    const progressText = document.getElementById(`progress-${milestoneId}-text`);
+    
+    if (!milestoneItem || !progressFill || !progressText) {
+        console.warn(`Milestone elements not found for ${milestoneId}`);
+        return false;
+    }
+    
+    const progressPercentage = Math.min((currentAmount / targetAmount) * 100, 100);
+    const isAchieved = currentAmount >= targetAmount;
+    const isInProgress = currentAmount > 0 && !isAchieved;
+    
+    // Update progress bar with dynamic colors
+    progressFill.style.width = `${progressPercentage}%`;
+    progressText.textContent = `$${Math.min(currentAmount, targetAmount).toLocaleString()} / $${(targetAmount/1000).toFixed(0)}K`;
+    
+    // Apply dynamic colors and status based on progress
+    if (isAchieved) {
+        progressFill.style.background = 'linear-gradient(90deg, #10b981, #059669)'; // Green gradient
+        milestoneItem.classList.add('unlocked');
+        milestoneItem.classList.remove('locked', 'in-progress');
+    } else if (isInProgress) {
+        progressFill.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)'; // Orange gradient
+        milestoneItem.classList.add('in-progress');
+        milestoneItem.classList.remove('locked', 'unlocked');
+    } else {
+        progressFill.style.background = 'linear-gradient(90deg, #6b7280, #4b5563)'; // Gray gradient
+        milestoneItem.classList.add('locked');
+        milestoneItem.classList.remove('achieved', 'in-progress');
+    }
+    
+    return isAchieved;
+}
+
+function updateBreakdownDisplay(receivablesAmount, baseFees, bonus200k, bonus500k, totalFees, advanceAmount) {
+    // Update base fee
+    const baseFeeElement = document.getElementById('base-fee');
+    if (baseFeeElement) {
+        baseFeeElement.textContent = '$' + parseFloat(baseFees).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+    
+    // Update 200k bonus
+    const bonus200kRow = document.getElementById('bonus-200k-row');
+    const bonus200kElement = document.getElementById('bonus-200k');
+    if (bonus200kRow && bonus200kElement) {
+        if (receivablesAmount >= 200000) {
+            bonus200kRow.style.display = 'flex';
+            bonus200kElement.textContent = '$' + parseFloat(bonus200k).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        } else {
+            bonus200kRow.style.display = 'none';
+        }
+    }
+    
+    // Update 500k bonus
+    const bonus500kRow = document.getElementById('bonus-500k-row');
+    const bonus500kElement = document.getElementById('bonus-500k');
+    if (bonus500kRow && bonus500kElement) {
+        if (receivablesAmount >= 500000) {
+            bonus500kRow.style.display = 'flex';
+            bonus500kElement.textContent = '$' + parseFloat(bonus500k).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        } else {
+            bonus500kRow.style.display = 'none';
+        }
+    }
+    
+    // Update total fees
+    const totalFeesElement = document.getElementById('total-fees');
+    if (totalFeesElement) {
+        totalFeesElement.textContent = '$' + parseFloat(totalFees).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+}
+
+function showCelebrationEffect(milestoneId, title) {
+    console.log(`Celebration effect for ${milestoneId}: ${title}`);
+    
+    // Create confetti effect
+    createConfettiEffect();
+    
+    // Show notification
+    showAchievementNotification(title, milestoneId);
+}
+
+function createConfettiEffect() {
+    console.log('Creating confetti effect...');
+    const confettiContainer = document.createElement('div');
+    confettiContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+    `;
+    document.body.appendChild(confettiContainer);
+    
+    // Create confetti pieces
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.cssText = `
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: ${['#f59e0b', '#10b981', '#6366f1', '#8b5cf6'][Math.floor(Math.random() * 4)]};
+            left: ${Math.random() * 100}%;
+            top: -10px;
+            animation: confettiFall ${2 + Math.random() * 3}s linear forwards;
+            transform: rotate(${Math.random() * 360}deg);
+        `;
+        confettiContainer.appendChild(confetti);
+    }
+    
+    // Add CSS animation
+    if (!document.getElementById('confetti-styles')) {
+        const style = document.createElement('style');
+        style.id = 'confetti-styles';
+        style.textContent = `
+            @keyframes confettiFall {
+                to {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Remove confetti after animation
+    setTimeout(() => {
+        confettiContainer.remove();
+    }, 5000);
+}
+
+function showAchievementNotification(title, milestoneId) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        z-index: 10000;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        animation: slideInRight 0.5s ease-out;
+        max-width: 300px;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">🎉</div>
+            <div>
+                <div style="font-size: 16px; margin-bottom: 4px;">Achievement Unlocked!</div>
+                <div style="font-size: 14px; opacity: 0.9;">${title}</div>
+            </div>
+        </div>
+    `;
+    
+    // Add CSS animation
+    if (!document.getElementById('notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Remove notification after 4 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideInRight 0.5s ease-out reverse';
+        setTimeout(() => notification.remove(), 500);
+    }, 4000);
+}
+
 console.log('EarlyPay application script loaded successfully');
 console.log('Chart system simplified with full-width responsive design');
 console.log('Features: Simple bar chart, accurate click highlighting, full screen width');
-console.log('Added orders table functionality for selected orders display'); 
+console.log('Added orders table functionality for selected orders display');
+console.log('Added gamified achievement system with milestone tracking'); 

@@ -47,7 +47,90 @@
             <div class="forecast-container"><!-- open forecast-container -->
                 <div class="forecast-card"><!-- open forecast-card -->
 
-                    <div class="sales-chart-section"><!-- open sales-chart-section -->
+                    <!-- Main Dashboard Section -->
+                    <div class="main-dashboard">
+                        <!-- Header with title and date range -->
+                        <div class="dashboard-header">
+                            <h3>Confirmed Orders Overview</h3>
+                            <div class="date-section">
+                                <div class="date-selector">
+                                    <div class="date-input">
+                                        <label>Date Range</label>
+                                        <div class="slider-container">
+                                            <input type="range" id="date-range-slider" class="date-range-slider" min="0" max="100" value="0,30" style="display:none;">
+                                            <div class="slider-labels">
+                                                <span id="date-range-label">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart with integrated revenue display -->
+                        <div class="chart-container">
+                            <div class="chart-overlay">
+                                <div class="revenue-display" id="revenue-display">
+                                    <div class="revenue-label">You Will Receive</div>
+                                    <div class="revenue-breakdown">
+                                        <div class="breakdown-item">
+                                            <span class="breakdown-label">Base Amount:</span>
+                                            <span class="breakdown-value" id="revenue-base-amount">$0</span>
+                                        </div>
+                                        <div class="breakdown-item bonus-item" id="revenue-bonus-200k-item" style="display: none;">
+                                            <span class="breakdown-label">🏆 Tier 1 Bonus:</span>
+                                            <span class="breakdown-value bonus" id="revenue-bonus-200k">$0</span>
+                                        </div>
+                                        <div class="breakdown-item bonus-item" id="revenue-bonus-500k-item" style="display: none;">
+                                            <span class="breakdown-label">💎 Tier 2 Bonus:</span>
+                                            <span class="breakdown-value bonus" id="revenue-bonus-500k">$0</span>
+                                        </div>
+                                        <div class="breakdown-item total-item">
+                                            <span class="breakdown-label">Total You Will Receive:</span>
+                                            <span class="breakdown-value total" id="revenue-total-amount">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <canvas id="sales-chart" width="1200" height="400"></canvas>
+                        </div>
+
+                        <!-- Integrated milestone progress (simplified) -->
+                        <div class="milestone-progress">
+                            <div class="milestone-item" id="milestone-200k">
+                                <div class="milestone-info">
+                                    <span class="milestone-icon">🏆</span>
+                                    <span class="milestone-text">First Tier Bonus</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-200k"></div>
+                                </div>
+                                <span class="progress-text" id="progress-200k-text">$0 / $200K</span>
+                            </div>
+                            <div class="milestone-item" id="milestone-500k">
+                                <div class="milestone-info">
+                                    <span class="milestone-icon">💎</span>
+                                    <span class="milestone-text">Elite Tier Bonus</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-500k"></div>
+                                </div>
+                                <span class="progress-text" id="progress-500k-text">$0 / $500K</span>
+                            </div>
+                        </div>
+
+                        <!-- Chart controls -->
+                        <div class="chart-controls">
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <span class="legend-color orange"></span>
+                                    <span>Selected Range</span>
+                                </div>
+                            </div>
+                            <p class="chart-note">Hover over bars to see daily totals • Drag slider to adjust range</p>
+                        </div>
+
+                        <!-- Orders table toggle -->
                         <div class="selected-orders-section">
                             <button id="show-orders-btn-forecast" class="btn-secondary" onclick="toggleOrdersTable('forecast')">
                                 <i class="fas fa-list"></i> Show Selected Orders
@@ -84,45 +167,10 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div><!-- /orders-table-container-forecast -->
-                        </div><!-- /selected-orders-section -->
+                            </div>
+                        </div>
+                    </div>
 
-                        <h3>Daily Sales Overview</h3>
-                        
-                        <!-- Date Range Slider moved here -->
-                        <div class="date-section" style="margin: 20px 0;">
-                            <div class="date-selector">
-                                <div class="date-input">
-                                    <label>Date Range</label>
-                                    <div class="slider-container">
-                                        <input type="range" id="date-range-slider" class="date-range-slider" min="0" max="100" value="0,30" style="display:none;">
-                                        <div class="slider-labels">
-                                            <span id="date-range-label">Loading...</span>
-                                        </div><!-- /slider-labels -->
-                                    </div><!-- /slider-container -->
-                                </div><!-- /date-input -->
-                            </div><!-- /date-selector -->
-                        </div><!-- /date-section -->
-                        <div class="chart-container">
-                            <div class="chart-overlay">
-                                <div class="revenue-display" id="revenue-display">
-                                    
-                                    <div class="revenue-label">You Will Receive</div>
-                                    <div class="revenue-amount" id="revenue-amount">$0</div>
-                                </div>
-                            </div>
-                            <canvas id="sales-chart" width="1200" height="400"></canvas>
-                        </div>
-                        <div class="chart-controls">
-                            <div class="chart-legend">
-                                <div class="legend-item">
-                                    <span class="legend-color orange"></span>
-                                    <span>Selected Range</span>
-                                </div>
-                            </div>
-                            <p class="chart-note">Hover over bars to see daily totals • Drag slider to adjust range</p>
-                        </div>
-                    </div><!-- /sales-chart-section ✅ ADDED CLOSE -->
 
                     <div class="forecast-summary">
                         <div class="summary-section">
@@ -131,15 +179,29 @@
                             <p class="forecast-note">Based on <span id="order-count">0</span> orders for selected period</p>
                         </div>
 
+
                         <div class="advance-section">
-                            <h3>Advance Breakdown</h3>
+                            <h3>💰 Your Payout Breakdown</h3>
                             <div class="advance-breakdown">
                                 <div class="breakdown-row">
                                     <span class="breakdown-label">Selected Receivables Amount:</span>
                                     <span class="breakdown-value" id="eligible-sales">$0</span>
                                 </div>
                                 <div class="breakdown-row">
-                                    <span class="breakdown-label">You Will Receive:</span>
+                                    <span class="breakdown-fee-label">- Base Fee (0.65% per week):</span>
+                                    <span class="breakdown-fee-value" id="base-fee">$0</span>
+                                </div>
+                                <div class="breakdown-row bonus-row" id="bonus-200k-row" style="display: none;">
+                                    <span class="breakdown-label">+ 🏆 Tier 1 Bonus (+0.5%):</span>
+                                    <span class="breakdown-value bonus" id="bonus-200k">$0</span>
+                                </div>
+                                <div class="breakdown-row bonus-row" id="bonus-500k-row" style="display: none;">
+                                    <span class="breakdown-label">+ 💎 Tier 2 Bonus (+0.5%):</span>
+                                    <span class="breakdown-value bonus" id="bonus-500k">$0</span>
+                                </div>
+                            
+                                <div class="breakdown-row highlight">
+                                    <span class="breakdown-final-label">You Will Receive:</span>
                                     <span class="breakdown-value highlight" id="you-will-receive">$0</span>
                                 </div>
                             </div>
