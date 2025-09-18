@@ -590,11 +590,11 @@ function updateRevenueDisplay(amount, baseAmount, bonus200k, bonus500k) {
 // Update Advance Calculation
 function updateAdvanceCalculation() {
     console.log('Updating advance calculation');
-    const eligibleSalesElement = document.getElementById('eligible-sales');
+    const baseAdvanceElement = document.getElementById('base-advance-amount');
     const youWillReceiveElement = document.getElementById('you-will-receive');
     const forecastAmountElement = document.getElementById('forecast-amount');
     
-    if (!eligibleSalesElement || !youWillReceiveElement) {
+    if (!baseAdvanceElement || !youWillReceiveElement) {
         console.error('Required elements not found for advance calculation');
         return;
     }
@@ -630,7 +630,7 @@ function updateAdvanceCalculation() {
     console.log('Base amount:', baseAmount);
     
     if (!orderData || !orderData.orders || orderData.orders.length === 0) {
-        eligibleSalesElement.textContent = '$0';
+        baseAdvanceElement.textContent = '$0';
         youWillReceiveElement.textContent = '$0';
         return;
     }
@@ -710,7 +710,10 @@ function updateAdvanceCalculation() {
     
     if (forecastAmountElement) {
         const displayAmount = baseAmount || 0;
-        forecastAmountElement.textContent = '$' + displayAmount.toLocaleString();
+        forecastAmountElement.textContent = '$' + displayAmount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
         console.log('Updated forecast amount to:', displayAmount);
     }
     
@@ -738,7 +741,12 @@ function updateAdvanceCalculation() {
         maximumFractionDigits: 2
     });
     
-    eligibleSalesElement.textContent = '$' + formattedReceivables;
+    // Use netReceivables (receivables - base fee) for base advance amount
+    const formattedNetReceivables = parseFloat(netReceivables || 0).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    baseAdvanceElement.textContent = '$' + formattedNetReceivables;
     youWillReceiveElement.textContent = '$' + formattedAdvance;
     
     // Update orders table if it's visible on forecast page
@@ -2028,16 +2036,12 @@ function hidePagination(pageType) {
 let milestone200kCelebrated = false;
 let milestone500kCelebrated = false;
 let previousAdvanceAmount = 0;
-let confettiInProgress = false;
-let confettiCallCount = 0;
 
 // Reset celebration flags when date range changes
 function resetMilestoneCelebrations() {
     milestone200kCelebrated = false;
     milestone500kCelebrated = false;
     // Don't reset previousAdvanceAmount - we want to track it across slider movements
-    confettiInProgress = false;
-    confettiCallCount = 0;
 }
 
 function updateAchievementProgress(receivablesAmount, baseFees, ordersWithFees) {
@@ -2065,7 +2069,7 @@ function updateAchievementProgress(receivablesAmount, baseFees, ordersWithFees) 
     const crossed200kUpward = previousAdvanceAmount < 200000 && netReceivables >= 200000 && hasSignificantChange;
     const crossed500kUpward = previousAdvanceAmount < 500000 && netReceivables >= 500000 && hasSignificantChange;
     
-    // Update previous amount immediately after threshold checks to prevent repeated confetti
+    // Update previous amount immediately after threshold checks
     previousAdvanceAmount = netReceivables;
     
     console.log('Threshold check:', {
@@ -2075,29 +2079,20 @@ function updateAchievementProgress(receivablesAmount, baseFees, ordersWithFees) 
         crossed200k: crossed200kUpward,
         crossed500k: crossed500kUpward,
         milestone200kCelebrated: milestone200kCelebrated,
-        milestone500kCelebrated: milestone500kCelebrated,
-        confettiInProgress: confettiInProgress
+        milestone500kCelebrated: milestone500kCelebrated
     });
     
-    // One-time confetti celebrations - only when crossing thresholds upward
-    if (crossed200kUpward && !milestone200kCelebrated && !confettiInProgress) {
-        confettiCallCount++;
-        console.log('🎉 Crossing 200k advance amount threshold upward - triggering confetti! (Call #' + confettiCallCount + ')');
-        confettiInProgress = true;
+    // One-time celebrations - only when crossing thresholds upward
+    if (crossed200kUpward && !milestone200kCelebrated) {
+        console.log('🎉 Crossing 200k advance amount threshold upward!');
         showCelebrationEffect('200k', 'First Tier Bonus');
         milestone200kCelebrated = true;
-        // Reset confetti flag after a delay
-        setTimeout(() => { confettiInProgress = false; }, 3000);
     }
     
-    if (crossed500kUpward && !milestone500kCelebrated && !confettiInProgress) {
-        confettiCallCount++;
-        console.log('🎉 Crossing 500k advance amount threshold upward - triggering confetti! (Call #' + confettiCallCount + ')');
-        confettiInProgress = true;
+    if (crossed500kUpward && !milestone500kCelebrated) {
+        console.log('🎉 Crossing 500k advance amount threshold upward!');
         showCelebrationEffect('500k', 'Elite Tier Bonus');
         milestone500kCelebrated = true;
-        // Reset confetti flag after a delay
-        setTimeout(() => { confettiInProgress = false; }, 3000);
     }
 }
 
@@ -2190,63 +2185,10 @@ function updateBreakdownDisplay(receivablesAmount, baseFees, bonus200k, bonus500
 function showCelebrationEffect(milestoneId, title) {
     console.log(`Celebration effect for ${milestoneId}: ${title}`);
     
-    // Create confetti effect
-    createConfettiEffect();
-    
     // Show notification
     showAchievementNotification(title, milestoneId);
 }
 
-function createConfettiEffect() {
-    console.log('Creating confetti effect...');
-    const confettiContainer = document.createElement('div');
-    confettiContainer.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 9999;
-    `;
-    document.body.appendChild(confettiContainer);
-    
-    // Create confetti pieces
-    for (let i = 0; i < 50; i++) {
-        const confetti = document.createElement('div');
-        confetti.style.cssText = `
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: ${['#f59e0b', '#10b981', '#6366f1', '#8b5cf6'][Math.floor(Math.random() * 4)]};
-            left: ${Math.random() * 100}%;
-            top: -10px;
-            animation: confettiFall ${2 + Math.random() * 3}s linear forwards;
-            transform: rotate(${Math.random() * 360}deg);
-        `;
-        confettiContainer.appendChild(confetti);
-    }
-    
-    // Add CSS animation
-    if (!document.getElementById('confetti-styles')) {
-        const style = document.createElement('style');
-        style.id = 'confetti-styles';
-        style.textContent = `
-            @keyframes confettiFall {
-                to {
-                    transform: translateY(100vh) rotate(720deg);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // Remove confetti after animation
-    setTimeout(() => {
-        confettiContainer.remove();
-    }, 5000);
-}
 
 function showAchievementNotification(title, milestoneId) {
     const notification = document.createElement('div');

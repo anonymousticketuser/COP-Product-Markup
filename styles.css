@@ -400,6 +400,62 @@ div.page.active[style*="display: none"] {
     font-weight: 500;
 }
 
+.subordinate-breakdown-final-label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #1e293b;
+    background-clip: text;
+    margin-bottom: 4px;
+}
+
+.subordinate-breakdown-value {
+    text-align: right;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.receivables-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding: 6px 0;
+    border-top: 1px solid rgba(226, 232, 240, 0.3);
+}
+
+.subordinate-breakdown-final-label {
+    font-weight: 500;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 0;
+}
+
+
+    
+.subordinate-forecast-amount {
+    font-size: 12px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 4px;
+    text-align: right;
+}
+
+.subordinate-forecast-note {
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-align: center;
+    padding: 4px 8px;
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 4px;
+    border: 1px solid rgba(226, 232, 240, 0.3);
+}
+
 /* Simplified Milestone Progress */
 .milestone-progress {
     display: flex;
@@ -490,9 +546,16 @@ div.page.active[style*="display: none"] {
 
 /* Advance Section */
 .advance-section {
-    margin-top: 40px;
-    padding-top: 32px;
-    border-top: 1px solid rgba(226, 232, 240, 0.5);
+    flex: 0 0 25%;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    position: sticky;
+    top: 100px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
 }
 
 .advance-section h3 {
@@ -940,17 +1003,22 @@ div.page.active[style*="display: none"] {
     z-index: 1;
 }
 
-.chart-container {
+/* Chart and Breakdown Container */
+.chart-and-breakdown-container {
+    display: flex;
+    gap: 24px;
     margin-bottom: 24px;
+    align-items: flex-start;
+}
+
+.chart-container {
+    flex: 0 0 75%;
     overflow-x: auto;
     background: white;
     border-radius: 20px;
     padding: 24px;
     box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(226, 232, 240, 0.5);
-    width: 100%;
-    max-width: 100%;
-    min-width: 100%;
     position: relative;
     box-sizing: border-box;
 }
@@ -1767,8 +1835,23 @@ div.page.active[style*="display: none"] {
         margin-bottom: 0px;
     }
     
+    .chart-and-breakdown-container {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
     .chart-container {
+        flex: none;
+        width: 100%;
         padding: 16px;
+    }
+    
+    .advance-section {
+        flex: none;
+        width: 100%;
+        position: static;
+        max-height: none;
+        margin-top: 0;
     }
     
     .revenue-display {
@@ -1818,6 +1901,18 @@ div.page.active[style*="display: none"] {
     
     .date-section {
         padding: 4px;
+    }
+    
+    .chart-and-breakdown-container {
+        gap: 12px;
+    }
+    
+    .chart-container {
+        padding: 12px;
+    }
+    
+    .advance-section {
+        padding: 16px;
     }
     
     .revenue-display {
