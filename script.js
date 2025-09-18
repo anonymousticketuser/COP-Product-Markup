@@ -2085,13 +2085,13 @@ function updateAchievementProgress(receivablesAmount, baseFees, ordersWithFees) 
     // One-time celebrations - only when crossing thresholds upward
     if (crossed200kUpward && !milestone200kCelebrated) {
         console.log('🎉 Crossing 200k advance amount threshold upward!');
-        showCelebrationEffect('200k', 'First Tier Bonus');
+        showCelebrationEffect('200k', 'Over 200k Bonus');
         milestone200kCelebrated = true;
     }
     
     if (crossed500kUpward && !milestone500kCelebrated) {
         console.log('🎉 Crossing 500k advance amount threshold upward!');
-        showCelebrationEffect('500k', 'Elite Tier Bonus');
+        showCelebrationEffect('500k', 'Over 500k Bonus');
         milestone500kCelebrated = true;
     }
 }

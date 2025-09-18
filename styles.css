@@ -194,6 +194,26 @@ body {
     padding: 0 20px;
 }
 
+/* Large screen optimizations */
+@media (min-width: 1400px) {
+    #page-container {
+        max-width: 1600px;
+        padding: 0 40px;
+    }
+    
+    .main-dashboard {
+        padding: 60px;
+    }
+    
+    .chart-container {
+        padding: 40px;
+    }
+    
+    .advance-section {
+        padding: 40px;
+    }
+}
+
 #page-container > .page {
     display: none;
     max-width: 100%;
@@ -1248,6 +1268,18 @@ div.page.active[style*="display: none"] {
     max-width: 100%;
 }
 
+@media (max-width: 768px) {
+    .chart-container canvas {
+        height: 300px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-container canvas {
+        height: 250px !important;
+    }
+}
+
 .chart-controls {
     display: flex;
     flex-direction: column;
@@ -1867,6 +1899,47 @@ div.page.active[style*="display: none"] {
     }
 }
 
+/* Header responsive design */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 0 16px;
+    }
+    
+    .header-left {
+        gap: 16px;
+    }
+    
+    .breadcrumb {
+        display: none;
+    }
+    
+    .marketplace-logo {
+        font-size: 18px;
+    }
+    
+    .user-info {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        padding: 0 12px;
+    }
+    
+    .header-left {
+        gap: 12px;
+    }
+    
+    .marketplace-logo {
+        font-size: 16px;
+    }
+    
+    .user-info {
+        font-size: 13px;
+    }
+}
+
 /* Forecast page responsive design */
 @media (max-width: 768px) {
     .forecast-card {
@@ -1963,17 +2036,22 @@ div.page.active[style*="display: none"] {
 }
 
 @media (max-width: 480px) {
+    #page-container {
+        padding: 0 12px;
+    }
+    
     .forecast-container {
-        padding: 0 16px;
+        padding: 0;
     }
     
     .forecast-card {
-        padding: 20px;
-        margin: 0 8px;
+        padding: 0;
+        margin: 0;
     }
     
     .main-dashboard {
-        padding: 20px;
+        padding: 16px;
+        margin: 0;
     }
     
     .dashboard-header h3 {
@@ -2012,6 +2090,27 @@ div.page.active[style*="display: none"] {
     .btn-large {
         padding: 14px 24px;
         font-size: 14px;
+    }
+    
+    .page-header h1 {
+        font-size: 24px;
+    }
+    
+    .page-header p {
+        font-size: 14px;
+    }
+    
+    .breakdown-item {
+        min-width: 80px;
+        padding: 4px 6px;
+    }
+    
+    .breakdown-item .breakdown-label {
+        font-size: 9px;
+    }
+    
+    .breakdown-item .breakdown-value {
+        font-size: 11px;
     }
 } 
 
@@ -2224,6 +2323,17 @@ div.page.active[style*="display: none"] {
 }
 
 /* Responsive table */
+@media (max-width: 1024px) {
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .orders-table {
+        min-width: 600px;
+    }
+}
+
 @media (max-width: 768px) {
     .orders-table th,
     .orders-table td {
@@ -2239,6 +2349,40 @@ div.page.active[style*="display: none"] {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+    
+    .table-container {
+        border-radius: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .orders-table th,
+    .orders-table td {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+    
+    .orders-table th:nth-child(3),
+    .orders-table td:nth-child(3),
+    .orders-table th:nth-child(4),
+    .orders-table td:nth-child(4) {
+        max-width: 100px;
+    }
+    
+    .pagination-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .pagination-buttons .btn-small {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .page-numbers {
+        justify-content: center;
+        flex-wrap: wrap;
     }
 } 
 
