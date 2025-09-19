@@ -209,17 +209,19 @@ function updateRangeSliderWithOrderDates(orders) {
     
     console.log('Days from Jan 1, 2025:', earliestDays, 'to', latestDays);
     
-    // Calculate one week from now
+    // Calculate one week from now and three weeks from now
     const today = new Date();
     const oneWeekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const threeWeeksFromNow = new Date(today.getTime() + 21 * 24 * 60 * 60 * 1000);
     const oneWeekFromNowDays = Math.ceil((oneWeekFromNow - baseDate) / (1000 * 60 * 60 * 24));
+    const threeWeeksFromNowDays = Math.ceil((threeWeeksFromNow - baseDate) / (1000 * 60 * 60 * 24));
     
-    // Update the slider range to cover from one week from now to the last order
+    // Update the slider range to cover from one week from now to three weeks from now (or last order if earlier)
     sliderInstance.update({
         min: Math.max(0, oneWeekFromNowDays), // Start from one week from now
         max: latestDays + 7, // End a week after latest order
         from: Math.max(0, oneWeekFromNowDays), // Start from one week from now
-        to: latestDays // End at the last order
+        to: Math.min(threeWeeksFromNowDays, latestDays) // End at three weeks from now or last order, whichever is earlier
     });
     
     // Show the slider now that it's configured
@@ -244,10 +246,10 @@ function updateRangeSliderWithOrderDates(orders) {
     }
     
     // Update the date range label to show the new range
-    updateDateRangeLabel({ from: oneWeekFromNowDays, to: latestDays });
+    updateDateRangeLabel({ from: oneWeekFromNowDays, to: Math.min(threeWeeksFromNowDays, latestDays) });
     
-    console.log(`Updated range slider: ${oneWeekFromNowDays} to ${latestDays} days from Jan 1, 2025`);
-    console.log(`Slider now covers: ${oneWeekFromNow.toLocaleDateString()} to ${latestDate.toLocaleDateString()}`);
+    console.log(`Updated range slider: ${oneWeekFromNowDays} to ${Math.min(threeWeeksFromNowDays, latestDays)} days from Jan 1, 2025`);
+    console.log(`Slider now covers: ${oneWeekFromNow.toLocaleDateString()} to ${Math.min(threeWeeksFromNow, latestDate).toLocaleDateString()}`);
 }
 
 // Parse CSV orders
